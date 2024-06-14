@@ -1,58 +1,38 @@
 "use client"
+import React from "react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { collection, query, where, getDocs } from "firebase/firestore"
-import { db } from "../Firebase"
-import { useAuth } from "../contexts/AuthContext"
 import { CompanyData } from "../types"
+import DashboardLayout from "../components/DashboardLayout"
 
-const Dashboard = () => {
+interface User {
+  email: string
+  displayName?: string
+  uid?: string
+}
+
+interface DashboardProps {
+  companyData: CompanyData | null
+  user: User | null
+  logout: () => void
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ companyData, user, logout }) => {
   const router = useRouter()
-  const { user, loading, logout } = useAuth()
-  const [companyData, setCompanyData] = useState<CompanyData | null>(null)
 
-  useEffect(() => {
-    const fetchCompanyData = async () => {
-      if (user) {
-        const q = query(
-          collection(db, "companies"),
-          where("members", "array-contains", {
-            displayName: user.displayName,
-            uid: user.uid,
-            email: user.email,
-          })
-        )
-        const querySnapshot = await getDocs(q)
-
-        if (!querySnapshot.empty) {
-          setCompanyData(querySnapshot.docs[0].data() as CompanyData)
-        } else {
-          router.push("/company-setup") // Redirect to company setup if no company found
-        }
-      }
-    }
-
-    if (!loading) {
-      if (user) {
-        fetchCompanyData()
-      } else {
-        router.push("/") // Redirect to login if no user is signed in
-      }
-    }
-  }, [user, loading, router])
-
-  if (loading) {
-    return <p>Loading...</p>
+  if (!user) {
+    router.push("/") // Redirect to Signup page if no user is signed in
+    return null
   }
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 p-6">
+    <div className="flex flex-col items-center justify-start min-h-screen p-6">
       <h1 className="text-3xl font-semibold my-10">Company Dashboard</h1>
       {companyData ? (
         <div>
           <p className="text-center text-lg mb-10 text-gray-600 max-w-md">
             Welcome to your company's dashboard.
           </p>
+          <p className="my-4">Logged in as: {user?.email}</p>
           <p>Company ID: {companyData.companyID}</p>
           <p>Company Name: {companyData.companyName}</p>
           {/* Add more company details as needed */}
@@ -70,4 +50,8 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default (props: DashboardProps) => (
+  <DashboardLayout>
+    <Dashboard {...props} />
+  </DashboardLayout>
+)
