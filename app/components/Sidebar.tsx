@@ -9,10 +9,10 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ toggleSidebar }) => {
   const { user } = useAuth()
   return (
-    <div className="w-64 bg-gray-800 text-white flex flex-col lg:sticky lg:top-0 min-h-screen justify-between">
+    <div className="w-64 bg-gray-800 text-white flex flex-col lg:sticky lg:top-0 min-h-screen justify-between shadow-md">
       <section>
         <div className="flex justify-between mx-2 items-center lg:justify-center">
-          <span className="p-4 text-xl font-semibold">WisOperator</span>
+          <span className="p-4 text-xl font-semibold">- WisOperator -</span>
           <button className="lg:hidden p-4 w-fit" onClick={toggleSidebar}>
             <svg
               className="w-6 h-6 text-white"
@@ -69,10 +69,10 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleSidebar }) => {
               <path d="M7.833 2c-.507 0-.98.216-1.318.576A1.92 1.92 0 0 0 6 3.89V21a1 1 0 0 0 1.625.78L12 18.28l4.375 3.5A1 1 0 0 0 18 21V3.889c0-.481-.178-.954-.515-1.313A1.808 1.808 0 0 0 16.167 2H7.833Z" />
             </svg>
 
-            <span className="px-2 py-2 text-white">Jobs</span>
+            <span className="px-2 py-2 text-white line-through">Jobs</span>
           </Link>
           <Link
-            href="/dashboard"
+            href="/employees"
             className="flex items-center mx-2 hover:bg-gray-600 text-lg rounded-lg"
           >
             <svg
@@ -113,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ toggleSidebar }) => {
               />
             </svg>
 
-            <span className="px-2 py-2 text-white">Settings</span>
+            <span className="px-2 py-2 text-white line-through">Settings</span>
           </Link>
         </nav>
       </section>

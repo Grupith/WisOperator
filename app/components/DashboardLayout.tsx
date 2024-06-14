@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, ReactNode } from "react"
+import React, { useState, useEffect, ReactNode, cloneElement } from "react"
 import { useRouter } from "next/navigation"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import { db } from "../Firebase"
@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext"
 import Sidebar from "../components/Sidebar"
 import Navbar from "../components/Navbar"
 import { CompanyData } from "../types"
+import LoadingSpinner from "./LoadingSpinner"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -15,8 +16,9 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [companyData, setCompanyData] = useState<CompanyData | null>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const { user, loading, logout } = useAuth()
+  const { user, loading: authLoading, logout } = useAuth()
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
@@ -25,35 +27,52 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   useEffect(() => {
     const fetchCompanyData = async () => {
       if (user) {
-        const q = query(
-          collection(db, "companies"),
-          where("members", "array-contains", {
-            displayName: user.displayName,
-            uid: user.uid,
-            email: user.email,
-          })
-        )
-        const querySnapshot = await getDocs(q)
+        try {
+          console.log("Fetching company data for user:", user.email)
+          const q = query(
+            collection(db, "companies"),
+            where("members", "array-contains", {
+              displayName: user.displayName,
+              uid: user.uid,
+              email: user.email,
+            })
+          )
+          const querySnapshot = await getDocs(q)
 
-        if (!querySnapshot.empty) {
-          setCompanyData(querySnapshot.docs[0].data() as CompanyData)
-        } else {
-          router.push("/company-setup") // Redirect to company setup if no company found
+          if (!querySnapshot.empty) {
+            console.log("Company data found for user:", user.email)
+            setCompanyData(querySnapshot.docs[0].data() as CompanyData)
+          } else {
+            console.log("No company data found, redirecting to /company-setup")
+            router.push("/company-setup")
+          }
+        } catch (error) {
+          console.error("Error fetching company data:", error)
+        } finally {
+          setLoading(false)
         }
+      } else {
+        setLoading(false)
       }
     }
 
-    if (!loading) {
+    if (!authLoading) {
       if (user) {
         fetchCompanyData()
       } else {
-        router.push("/") // Redirect to Signup page if no user is signed in
+        console.log("User not authenticated, redirecting to /")
+        router.push("/")
       }
     }
-  }, [user, loading, router])
+  }, [user, authLoading, router])
 
-  if (loading) {
-    return <p>Loading...</p>
+  if (authLoading || loading) {
+    return <LoadingSpinner />
+  }
+
+  if (!companyData) {
+    console.log("No company data available, rendering null")
+    return null // Or render a fallback UI if necessary
   }
 
   return (
@@ -78,7 +97,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           companyName={companyData?.companyName}
         />
         <main className="p-6 bg-gray-50 flex-1">
-          {React.cloneElement(children as React.ReactElement, {
+          {cloneElement(children as React.ReactElement, {
             companyData,
             user,
             logout,

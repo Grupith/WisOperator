@@ -55,9 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, companyName }) => {
           />
         </svg>
       </button>
-      <span className="text-lg font-semibold">
-        {companyName || "Dashboard"}
-      </span>
+      <span className="text-md font-medium">{companyName || "Dashboard"}</span>
       <div className="relative" ref={dropdownRef}>
         <div className="cursor-pointer" onClick={toggleDropdown}>
           {user?.photoURL && (
@@ -72,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar, companyName }) => {
         </div>
         {dropdownOpen && (
           <ul className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer line-through">
               Account
             </li>
             <li

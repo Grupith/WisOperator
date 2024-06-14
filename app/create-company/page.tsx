@@ -1,9 +1,9 @@
 "use client"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { addCompanyToFirestore } from "../Firestore"
 import { getAuth } from "firebase/auth"
+const short = require("short-uuid")
 
 const CreateCompany = () => {
   const [companyName, setCompanyName] = useState("")
@@ -17,7 +17,7 @@ const CreateCompany = () => {
   const router = useRouter()
 
   const handleCreate = async () => {
-    const companyID = uuidv4() // Generate a random CompanyID
+    const companyID = short.generate() // Generate a random CompanyID
     const auth = getAuth()
     const user = auth.currentUser
 
