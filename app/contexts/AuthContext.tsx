@@ -1,62 +1,84 @@
 "use client"
-import {
+import React, {
   createContext,
   useContext,
   useState,
-  ReactNode,
   useEffect,
+  ReactNode,
 } from "react"
 import {
-  signInWithPopup,
-  signOut,
-  GoogleAuthProvider,
-  User,
+  getAuth,
   onAuthStateChanged,
+  User,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from "firebase/auth"
-import { auth } from "../Firebase" // your Firebase config file
+import { getFirestore, doc, setDoc } from "firebase/firestore"
+import { app } from "../Firebase"
 
-interface AuthContextType {
+interface AuthContextProps {
   user: User | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
 }
 
-interface AuthProviderProps {
-  children: ReactNode
+const AuthContext = createContext<AuthContextProps>({
+  user: null,
+  loading: true,
+  signInWithGoogle: async () => {},
+  logout: async () => {},
+})
+
+export const useAuth = () => {
+  return useContext(AuthContext)
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const firestore = getFirestore(app)
+  const auth = getAuth(app)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Add user to the users collection
+        const userDocRef = doc(firestore, "users", user.uid)
+        await setDoc(
+          userDocRef,
+          {
+            displayName: user.displayName,
+            email: user.email,
+            uid: user.uid,
+          },
+          { merge: true }
+        )
+
+        setUser(user)
+      } else {
+        setUser(null)
+      }
       setLoading(false)
     })
 
     return () => unsubscribe()
-  }, [])
+  }, [auth, firestore])
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider()
     try {
-      const result = await signInWithPopup(auth, provider)
-      setUser(result.user)
+      await signInWithPopup(auth, provider)
     } catch (error) {
-      console.error("Error signing in with Google", error)
+      console.error("Error signing in with Google:", error)
     }
   }
 
   const logout = async () => {
     try {
-      await signOut(auth)
-      setUser(null)
+      await auth.signOut()
     } catch (error) {
-      console.error("Error signing out", error)
+      console.error("Error logging out:", error)
     }
   }
 
@@ -65,12 +87,4 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
 }

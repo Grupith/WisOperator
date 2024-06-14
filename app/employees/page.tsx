@@ -19,33 +19,35 @@ const Employees = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-6">
+      <div className="p-6 overflow-x-hidden">
         <h1 className="text-2xl font-semibold mb-4">Current Employees</h1>
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 bg-gray-200 text-left text-gray-600 font-semibold uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="py-2 px-4 bg-gray-200 text-left text-gray-600 font-semibold uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="py-2 px-4 bg-gray-200 text-left text-gray-600 font-semibold uppercase tracking-wider">
-                  Role
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((employee, index) => (
-                <tr key={index} className="border-b">
-                  <td className="py-2 px-4">{employee.name}</td>
-                  <td className="py-2 px-4">{employee.email}</td>
-                  <td className="py-2 px-4">{employee.role}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 bg-gray-200 text-left text-gray-600 font-semibold uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="py-2 px-4 bg-gray-200 text-left text-gray-600 font-semibold uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="py-2 px-4 bg-gray-200 text-left text-gray-600 font-semibold uppercase tracking-wider">
+                    Role
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {employees.map((employee, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="py-2 px-4">{employee.name}</td>
+                    <td className="py-2 px-4">{employee.email}</td>
+                    <td className="py-2 px-4">{employee.role}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="mt-8">
@@ -72,7 +74,7 @@ const Employees = () => {
             <div>
               <button
                 onClick={handleInvite}
-                className="w-full lg:w-56 px-4 py-2 line-through bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-150"
+                className="w-full lg:w-56 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition ease-in-out duration-150"
               >
                 Send Invite
               </button>

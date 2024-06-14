@@ -76,7 +76,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="flex min-h-screen relative overflow-x-hidden">
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black opacity-50 z-40 lg:hidden"
@@ -91,12 +91,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Sidebar toggleSidebar={toggleSidebar} />
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-x-hidden">
         <Navbar
           toggleSidebar={toggleSidebar}
           companyName={companyData?.companyName}
         />
-        <main className="p-6 bg-gray-50 flex-1">
+        <main className="sm:p-6 bg-gray-50 flex-1">
           {cloneElement(children as React.ReactElement, {
             companyData,
             user,
