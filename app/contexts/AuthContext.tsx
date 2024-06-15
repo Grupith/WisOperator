@@ -13,7 +13,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth"
-import { getFirestore, doc, setDoc } from "firebase/firestore"
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore"
 import { app } from "../Firebase"
 
 interface AuthContextProps {
@@ -43,17 +43,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Add user to the users collection
         const userDocRef = doc(firestore, "users", user.uid)
-        await setDoc(
-          userDocRef,
-          {
+        const userDocSnap = await getDoc(userDocRef)
+
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data()
+          // Ensure companyID is only set if it doesn't already exist
+          if (!userData.companyID) {
+            await setDoc(
+              userDocRef,
+              {
+                displayName: user.displayName,
+                email: user.email,
+                uid: user.uid,
+                companyID: "",
+              },
+              { merge: true }
+            )
+          }
+        } else {
+          await setDoc(userDocRef, {
             displayName: user.displayName,
             email: user.email,
             uid: user.uid,
-          },
-          { merge: true }
-        )
+            companyID: "",
+          })
+        }
 
         setUser(user)
       } else {

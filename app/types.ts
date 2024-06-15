@@ -1,4 +1,5 @@
 export interface CompanyData {
+  id: string
   companyID: string
   companyName: string
   companyDescription: string

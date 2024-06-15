@@ -10,7 +10,7 @@ const Signup = () => {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push("/dashboard")
+      router.push("/company-setup")
     }
   }, [user, loading, router])
 

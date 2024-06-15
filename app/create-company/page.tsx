@@ -3,7 +3,8 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { addCompanyToFirestore } from "../Firestore"
 import { getAuth } from "firebase/auth"
-const short = require("short-uuid")
+import { db } from "../Firebase"
+import { doc, updateDoc } from "firebase/firestore"
 
 const CreateCompany = () => {
   const [companyName, setCompanyName] = useState("")
@@ -17,7 +18,6 @@ const CreateCompany = () => {
   const router = useRouter()
 
   const handleCreate = async () => {
-    const companyID = short.generate() // Generate a random CompanyID
     const auth = getAuth()
     const user = auth.currentUser
 
@@ -25,8 +25,8 @@ const CreateCompany = () => {
       console.error("No user is signed in.")
       return
     }
+
     const companyData = {
-      companyID,
       companyName,
       companyDescription,
       companyLogo,
@@ -40,13 +40,22 @@ const CreateCompany = () => {
           displayName: user.displayName,
           uid: user.uid,
           email: user.email,
+          role: "Owner",
         },
       ],
     }
 
     try {
-      // Add the company data to Firestore
-      const docRef = await addCompanyToFirestore(companyData)
+      // Add the company data to Firestore and get the document ID
+      const companyID = await addCompanyToFirestore(companyData)
+      console.log("Company created with ID:", companyID)
+
+      // Update the user's document with the companyID
+      const userRef = doc(db, "users", user.uid)
+      await updateDoc(userRef, {
+        companyID,
+      })
+      console.log("Updated the user's companyID in Firestore")
 
       // Redirect to the dashboard
       router.push("/dashboard")

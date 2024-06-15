@@ -1,13 +1,12 @@
 "use client"
 import React, { useState, useEffect, ReactNode, cloneElement } from "react"
 import { useRouter } from "next/navigation"
-import { collection, query, where, getDocs } from "firebase/firestore"
-import { db } from "../Firebase"
 import { useAuth } from "../contexts/AuthContext"
 import Sidebar from "../components/Sidebar"
 import Navbar from "../components/Navbar"
-import { CompanyData } from "../types"
 import LoadingSpinner from "./LoadingSpinner"
+import { fetchUserData, fetchCompanyData } from "../Firestore"
+import { CompanyData } from "../types"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -25,29 +24,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }
 
   useEffect(() => {
-    const fetchCompanyData = async () => {
+    const initializeData = async () => {
       if (user) {
         try {
           console.log("Fetching company data for user:", user.email)
-          const q = query(
-            collection(db, "companies"),
-            where("members", "array-contains", {
-              displayName: user.displayName,
-              uid: user.uid,
-              email: user.email,
-            })
-          )
-          const querySnapshot = await getDocs(q)
 
-          if (!querySnapshot.empty) {
-            console.log("Company data found for user:", user.email)
-            setCompanyData(querySnapshot.docs[0].data() as CompanyData)
+          const userData = await fetchUserData(user.uid)
+          console.log("Fetched user data:", userData) // Log the user data
+
+          if (userData && userData.companyID) {
+            console.log("User has companyID:", userData.companyID)
+
+            // Fetch company data using document ID
+            const companyData = await fetchCompanyData(userData.companyID)
+            console.log("Fetched company data:", companyData) // Log the company data
+
+            setCompanyData(companyData as CompanyData)
           } else {
-            console.log("No company data found, redirecting to /company-setup")
+            console.log(
+              "No companyID found in user document, redirecting to /company-setup"
+            )
             router.push("/company-setup")
           }
         } catch (error) {
-          console.error("Error fetching company data:", error)
+          console.error("Error fetching data:", error)
         } finally {
           setLoading(false)
         }
@@ -58,7 +58,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
     if (!authLoading) {
       if (user) {
-        fetchCompanyData()
+        initializeData()
       } else {
         console.log("User not authenticated, redirecting to /")
         router.push("/")
@@ -75,8 +75,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return null // Or render a fallback UI if necessary
   }
 
+  console.log("companyID from dashboardLayout", companyData.id)
+
   return (
-    <div className="flex min-h-screen relative overflow-x-hidden">
+    <div className="flex min-h-screen relative overflow-hidden">
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black opacity-50 z-40 lg:hidden"
@@ -91,16 +93,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Sidebar toggleSidebar={toggleSidebar} />
       </div>
 
-      <div className="flex-1 flex flex-col overflow-x-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar
           toggleSidebar={toggleSidebar}
           companyName={companyData?.companyName}
         />
-        <main className="sm:p-6 bg-gray-50 flex-1">
+        <main className="sm:p-6 bg-gray-50 flex-1 overflow-y-auto">
           {cloneElement(children as React.ReactElement, {
             companyData,
             user,
             logout,
+            companyID: companyData.id,
           })}
         </main>
       </div>

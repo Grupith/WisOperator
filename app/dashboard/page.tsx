@@ -13,9 +13,14 @@ interface DashboardProps {
     uid?: string
   } | null
   logout: () => void
+  companyID: string
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ companyData, user }) => {
+const Dashboard: React.FC<DashboardProps> = ({
+  companyData,
+  user,
+  companyID,
+}) => {
   const router = useRouter()
   const { loading: authLoading } = useAuth()
 
@@ -29,8 +34,10 @@ const Dashboard: React.FC<DashboardProps> = ({ companyData, user }) => {
     return null
   }
 
+  console.log("company Id from dashboard", companyID)
+
   return (
-    <div className="flex flex-col justify-start min-h-screen p-6">
+    <div className="flex flex-col justify-start min-h-screen p-6 overflow-x-hidden">
       <h1 className="text-2xl font-semibold mb-10">Main Dashboard</h1>
       {companyData ? (
         <div>
@@ -38,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({ companyData, user }) => {
             Welcome to your company's dashboard.
           </p>
           <p className="my-4">Logged in as: {user?.email}</p>
-          <p>Company ID: {companyData.companyID}</p>
+          <p>Company ID: {companyID}</p>
           <p>Company Name: {companyData.companyName}</p>
           {/* Add more company details as needed */}
         </div>

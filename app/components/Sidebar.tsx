@@ -9,7 +9,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ toggleSidebar }) => {
   const { user } = useAuth()
   return (
-    <div className="w-64 bg-gray-800 text-white flex flex-col lg:sticky lg:top-0 min-h-screen justify-between shadow-md">
+    <div className="w-64 bg-gray-800 text-white flex flex-col lg:sticky lg:top-0 lg:h-screen min-h-screen justify-between shadow-md">
       <section>
         <div className="flex justify-between mx-2 items-center lg:justify-center">
           <span className="p-4 text-xl font-semibold">- WisOperator -</span>
